@@ -1,0 +1,6 @@
+{
+    "App": "./picture-geo.exe",
+    "default": "./data/default.geojson",
+    "target": "./data/target.geojson",
+    "support": "./data/support.geojson"
+}
