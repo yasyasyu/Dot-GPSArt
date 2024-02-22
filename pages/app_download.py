@@ -61,11 +61,21 @@ def get_layout():
             ),
             dash.html.Div(
                 children=[
+                    dash.dcc.ConfirmDialog(
+                        id="download-success",
+                        message="ダウンロードが完了しました．\n描画アプリケーションを起動しますか",
+                    ),
+                    dash.dcc.ConfirmDialog(
+                        id="download-failed",
+                        message="ダウンロードに失敗しました．",
+                    ),
                     dash.html.Pre(id="center-text", children="Center"),
                     dash.dcc.Input(id="center-lat", type="number", value=0),
                     dash.dcc.Input(id="center-lng", type="number", value=0),
                     dash.html.Button(
-                        "Set Center", id="center-btn", style={"padding": 10}
+                        "Set Center",
+                        id="center-btn",
+                        style={"padding": 5, "margin": 5},
                     ),
                     dash.html.Pre(id="radius-text", children="Circle Radius"),
                     dash.dcc.Input(
@@ -83,8 +93,18 @@ def get_layout():
                         },
                         value=500,
                     ),
-                    dash.html.Pre(id="zoom-text", children="Zoom"),
+                    dash.html.Pre(id="Zoom-text", children="Zoom"),
                     dash.dcc.Input(id="zoom", type="number", min=0, max=200, value=25),
+                    dash.html.Button(
+                        "Set Zoom input field",
+                        id="Zoom-input-btn",
+                        style={"padding": 5, "margin": 5},
+                    ),
+                    dash.html.Button(
+                        "Set Zoom slider",
+                        id="Zoom-slider-btn",
+                        style={"padding": 5, "margin": 5},
+                    ),
                     dash.dcc.Slider(
                         id="zoom-slider",
                         min=0,
@@ -123,7 +143,12 @@ layout = get_layout()
 
 
 @dash.callback(
-    Output("download-text", "children"),
+    [
+        Output("download-text", "children"),
+        Output("download-success", "displayed"),
+        Output("download-failed", "displayed"),
+        Output("download-failed", "message"),
+    ],
     Input("download", "n_clicks"),
     [State("map-view", "center"), State("radius", "value")],
     prevent_initial_call=True,
@@ -137,9 +162,14 @@ def download_geo(_, center, radius):
         download_geodata.download(center, radius)
     except Exception as e:
         print(e)
-        return f'Download Failed "{e}"'
+        return (
+            f'Download Failed "{e}"',
+            False,
+            True,
+            f"ダウンロードに失敗しました．\n {e}",
+        )
 
-    return f"Download Success"
+    return f"Download Success", True, False, ""
 
 
 @dash.callback(
@@ -196,31 +226,50 @@ def change_center(_, center: Union[list, dict], lat, lng):
         Output("zoom-slider", "value"),
         Output("map-view", "zoom"),
     ],
-    [Input("zoom", "value"), Input("zoom-slider", "value"), Input("map-view", "zoom")],
+    [
+        Input("Zoom-input-btn", "n_clicks"),
+        Input("Zoom-slider-btn", "n_clicks"),
+    ],
+    [State("zoom", "value"), State("zoom-slider", "value")],
 )
-def change_zoom(zoom, zoom_slider, zoom_value):
+def change_zoom(input_btn, slider_btn, zoom, zoom_slider):
     ctx_id = dash.ctx.triggered_id
     print(zoom, zoom_slider, ctx_id)
     if ctx_id is None:
         return 25, 25, 18 - 25 / 12.5
 
-    if ctx_id == "zoom":
-        return zoom, zoom, 18 - zoom / 12.5
-    elif ctx_id == "zoom-slider":
-        return zoom_slider, zoom_slider, 18 - zoom_slider / 12.5
-    else:
-        # v = 18 - z / 12.5
-        # z = (18 - v) * 12.5
-        zoom = (18 - zoom_value) * 12.5
-        return zoom, zoom, zoom_value
+    match ctx_id:
+        case "Zoom-input-btn":
+            return zoom, zoom, 18 - zoom / 12.5
+        case "Zoom-slider-btn":
+            return (
+                zoom_slider,
+                zoom_slider,
+                18 - zoom_slider / 12.5,
+            )
+
+
+@dash.callback(
+    Output("Zoom-text", "children"),
+    Input("map-view", "zoom"),
+)
+def change_zoom(zoom_value):
+    ctx_id = dash.ctx.triggered_id
+    if ctx_id is None:
+        return f"Zoom {25}"
+    print(zoom_value)
+    # v = 18 - z / 12.5
+    # z = (18 - v) * 12.5
+    zoom = (18 - zoom_value) * 12.5
+    return f"Zoom {zoom}"
 
 
 @dash.callback(
     Output("draw", "style"),
-    Input("draw", "n_clicks"),
+    [Input("draw", "n_clicks"), Input("download-success", "submit_n_clicks")],
     prevent_initial_call=True,
 )
-def draw_app(_):
+def draw_app(*_):
     with open("./data/file_path.json") as f:
         draw_app_path = json.load(f)["App"]
     subprocess.run(draw_app_path)

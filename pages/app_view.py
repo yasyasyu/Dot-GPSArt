@@ -18,9 +18,19 @@ def get_layout():
             ),
             dash.html.Div(
                 children=[
-                    dash.html.Pre(id="view_zoom-text", children="Zoom"),
+                    dash.html.Pre(id="view_Zoom-text", children="Zoom"),
                     dash.dcc.Input(
                         id="view_zoom", type="number", min=0, max=200, value=25
+                    ),
+                    dash.html.Button(
+                        "Set Zoom input field",
+                        id="view_Zoom-input-btn",
+                        style={"padding": 5, "margin": 5},
+                    ),
+                    dash.html.Button(
+                        "Set Zoom slider",
+                        id="view_Zoom-slider-btn",
+                        style={"padding": 5, "margin": 5},
                     ),
                     dash.dcc.Slider(
                         id="view_zoom-slider",
@@ -65,30 +75,46 @@ layout = get_layout()
         Output("view_map-view", "zoom"),
     ],
     [
-        Input("view_zoom", "value"),
-        Input("view_zoom-slider", "value"),
-        Input("view_map-view", "zoom"),
+        Input("view_Zoom-input-btn", "n_clicks"),
+        Input("view_Zoom-slider-btn", "n_clicks"),
+    ],
+    [
+        State("view_zoom", "value"),
+        State("view_zoom-slider", "value"),
     ],
 )
-def change_zoom(zoom, zoom_slider, zoom_value):
-    # TODO button control
+def change_zoom(input_btn, slider_btn, zoom, zoom_slider):
     ctx_id = dash.ctx.triggered_id
     print(zoom, zoom_slider, ctx_id)
     if ctx_id is None:
-        zoom = (18 - 15) * 12.5
-        return zoom, zoom, 15
+        return 25, 25, 18 - 25 / 12.5
 
-    if ctx_id == "view_zoom":
-        print(18 - zoom / 12.5)
-        return zoom, zoom, 18 - zoom / 12.5
-    elif ctx_id == "view_zoom-slider":
-        print(18 - zoom_slider / 12.5)
-        return zoom_slider, zoom_slider, 18 - zoom_slider / 12.5
-    else:
-        # v = 18 - z / 12.5
-        # z = (18 - v) * 12.5
-        zoom = (18 - zoom_value) * 12.5
-        return zoom, zoom, zoom_value
+    match ctx_id:
+        case "view_Zoom-input-btn":
+            ...
+            print(18 - zoom / 12.5)
+            return zoom, zoom, 18 - zoom / 12.5
+        case "view_Zoom-slider-btn":
+            return (
+                zoom_slider,
+                zoom_slider,
+                18 - zoom_slider / 12.5,
+            )
+
+
+@dash.callback(
+    Output("view_Zoom-text", "children"),
+    Input("view_map-view", "zoom"),
+)
+def change_zoom(zoom_value):
+    ctx_id = dash.ctx.triggered_id
+    if ctx_id is None:
+        return f"Zoom {25}"
+    print(zoom_value)
+    # v = 18 - z / 12.5
+    # z = (18 - v) * 12.5
+    zoom = (18 - zoom_value) * 12.5
+    return f"Zoom {zoom}"
 
 
 def get_map_children():
