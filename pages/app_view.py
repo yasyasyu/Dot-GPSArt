@@ -28,7 +28,7 @@ def get_map_children():
     except Exception as e:
         center = (35.6895, 139.6917)
 
-        return default_children, center
+        return default_children, center, False
 
     target_feature_style = {
         "fillColor": "#000000",
@@ -41,12 +41,13 @@ def get_map_children():
         default_children
         + [dl.GeoJSON(data=target_feature_collection, style=target_feature_style)],
         center,
+        True,
     )
 
 
 def get_layout():
     print("load view")
-    children, center = get_map_children()
+    children, center, is_success = get_map_children()
 
     map_data = (
         dl.Map(
@@ -90,7 +91,12 @@ def get_layout():
                     dash.html.Hr(),
                     dash.dcc.Loading(
                         id="view_loading",
-                        children=[dash.html.Pre(id="view_load-text", children="wait")],
+                        children=[
+                            dash.html.Pre(
+                                id="view_load-text",
+                                children="Success" if is_success else "Wait",
+                            )
+                        ],
                         style={"margin": "10%"},
                         type="default",
                     ),
@@ -183,7 +189,7 @@ def change_zoom(zoom_value):
     prevent_initial_call=True,
 )
 def reload(_, zoom_value):
-    children, center = get_map_children()
+    children, center, is_success = get_map_children()
 
     zoom_level = 18 - zoom_value / 12.5
     map_data = (
@@ -195,7 +201,7 @@ def reload(_, zoom_value):
             style={"width": "70vw", "height": "92.5vh"},
         ),
     )
-    return map_data, "Success"
+    return map_data, "Success" if is_success else "Failed"
 
 
 @dash.callback(
