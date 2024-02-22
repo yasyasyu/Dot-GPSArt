@@ -2,40 +2,18 @@ import dash
 import dash_leaflet as dl
 from dash.dependencies import Input, Output, State
 
-from src import view, geo_feature
+from src import view
 
 dash.register_page(__name__, title="Dot-GPSArtRoute Viewer", path="/view")
 
 
 def get_layout():
     print("load view")
-    center = geo_feature.center_from_geojson(view.target_data_path)
     layout = dash.html.Div(
         [
             dash.html.Div(
                 id="view_map",
-                children=[
-                    dl.Map(
-                        id="view_map-view",
-                        center=center,
-                        zoom=15,
-                        children=[
-                            dl.TileLayer(),
-                            dl.MeasureControl(
-                                position="topleft",
-                                primaryLengthUnit="kilometers",
-                                primaryAreaUnit="hectares",
-                                activeColor="#214097",
-                                completedColor="#972158",
-                            ),
-                            dl.LocateControl(
-                                locateOptions={"enableHighAccuracy": True}
-                            ),
-                            dl.GestureHandling(),
-                        ],
-                        style={"width": "70vw", "height": "92.5vh"},
-                    )
-                ],
+                children=[],
                 style={"padding": 25, "flex": 1},
             ),
             dash.html.Div(
@@ -93,6 +71,7 @@ layout = get_layout()
     ],
 )
 def change_zoom(zoom, zoom_slider, zoom_value):
+    # TODO button control
     ctx_id = dash.ctx.triggered_id
     print(zoom, zoom_slider, ctx_id)
     if ctx_id is None:
@@ -112,39 +91,28 @@ def change_zoom(zoom, zoom_slider, zoom_value):
         return zoom, zoom, zoom_value
 
 
-@dash.callback(
-    [Output("view_map", "children"), Output("view_load-text", "children")],
-    Input("view_reload", "n_clicks"),
-    State("view_zoom", "value"),
-    # prevent_initial_call=True,
-)
-def reload(_, zoom_value):
+def get_map_children():
     print("reload")
+    default_children = [
+        dl.TileLayer(),
+        dl.MeasureControl(
+            position="topleft",
+            primaryLengthUnit="kilometers",
+            primaryAreaUnit="hectares",
+            activeColor="#214097",
+            completedColor="#972158",
+        ),
+        dl.LocateControl(locateOptions={"enableHighAccuracy": True}),
+        dl.GestureHandling(),
+    ]
 
     try:
         target_feature_collection, center = view.target_feature_collection()
 
     except Exception as e:
-        default_map_data = dl.Map(
-            id="view_map-view",
-            center=center,
-            zoom=15,
-            children=[
-                dl.TileLayer(),
-                dl.MeasureControl(
-                    position="topleft",
-                    primaryLengthUnit="kilometers",
-                    primaryAreaUnit="hectares",
-                    activeColor="#214097",
-                    completedColor="#972158",
-                ),
-                dl.LocateControl(locateOptions={"enableHighAccuracy": True}),
-                dl.GestureHandling(),
-            ],
-            style={"width": "70vw", "height": "92.5vh"},
-        )
+        center = (35.6895, 139.6917)
 
-        return default_map_data, f"Failed {e}"
+        return default_children, center
 
     target_feature_style = {
         "fillColor": "#000000",
@@ -152,28 +120,32 @@ def reload(_, zoom_value):
         "fillOpacity": 1,
         "weight": 10,
     }
+
+    return (
+        default_children
+        + [dl.GeoJSON(data=target_feature_collection, style=target_feature_style)],
+        center,
+    )
+
+
+@dash.callback(
+    [Output("view_map", "children"), Output("view_load-text", "children")],
+    Input("view_reload", "n_clicks"),
+    State("view_zoom", "value"),
+)
+def reload(_, zoom_value):
+    children, center = get_map_children()
+
+    zoom_level = 18 - zoom_value / 12.5
     map_data = (
         dl.Map(
             id="view_map-view",
             center=center,
-            zoom=18 - zoom_value / 12.5,
-            children=[
-                dl.TileLayer(),
-                dl.GeoJSON(data=target_feature_collection, style=target_feature_style),
-                dl.MeasureControl(
-                    position="topleft",
-                    primaryLengthUnit="kilometers",
-                    primaryAreaUnit="hectares",
-                    activeColor="#214097",
-                    completedColor="#972158",
-                ),
-                dl.LocateControl(locateOptions={"enableHighAccuracy": True}),
-                dl.GestureHandling(),
-            ],
+            zoom=zoom_level,
+            children=children,
             style={"width": "70vw", "height": "92.5vh"},
         ),
     )
-
     return map_data, "Success"
 
 

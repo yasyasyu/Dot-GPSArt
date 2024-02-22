@@ -6,7 +6,7 @@ import dash
 import dash_leaflet as dl
 from dash.dependencies import Input, Output, State
 
-from src import download_geodata
+from src import download_geodata, view, geo_feature
 
 dash.register_page(__name__, title="Dot-GPSArtRoute", path="/")
 
@@ -23,7 +23,10 @@ icon = dict(
 
 
 def get_layout():
-    center = (34.7, 135)
+    try:
+        center = geo_feature.center_from_geojson(view.target_data_path)
+    except:
+        center = (35.6895, 139.6917)
     layout = dash.html.Div(
         [
             dash.html.Div(
