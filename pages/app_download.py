@@ -125,8 +125,19 @@ def get_layout():
                     dash.html.Button("Draw", id="draw", style={"padding": 20}),
                     dash.html.Div(),
                     dash.html.Br(),
-                    dash.html.Button(
-                        "Jump View Page", id="view", style={"padding": 20}
+                    dash.html.Div(
+                        dash.html.Button(
+                            "Jump View Page",
+                            id="view",
+                            style={
+                                "width": "20vw",
+                                "height": "20vh",
+                            },
+                        ),
+                        style={
+                            "position": "absolute",
+                            "bottom": 50,
+                        },
                     ),
                     dash.html.Div(id="view_area", children=[]),
                 ],

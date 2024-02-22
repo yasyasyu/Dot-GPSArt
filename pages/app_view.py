@@ -99,8 +99,19 @@ def get_layout():
                     ),
                     dash.html.Div(id="reload_area", children=[]),
                     dash.html.Br(),
-                    dash.html.Button(
-                        "Jump Download Page", id="view_download", style={"padding": 20}
+                    dash.html.Div(
+                        dash.html.Button(
+                            "Jump Download Page",
+                            id="view_download",
+                            style={
+                                "width": "20vw",
+                                "height": "20vh",
+                            },
+                        ),
+                        style={
+                            "position": "absolute",
+                            "bottom": 50,
+                        },
                     ),
                     dash.html.Div(id="download_area", children=[]),
                 ],
