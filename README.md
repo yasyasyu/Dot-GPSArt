@@ -19,3 +19,5 @@ pip install -r requirement.txt
 * dash
 * dash-extensions
 * dash-leaflet
+
+* installer
