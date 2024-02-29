@@ -49,8 +49,6 @@ def _connect(data):
 
 
 def json_feature(file_path):
-    print("build json feature")
-    t = time.perf_counter()
     with open(file_path, encoding="utf_8_sig") as f:
         data = geojson.load(f)
     features = []
@@ -62,7 +60,6 @@ def json_feature(file_path):
                 properties={"name": i},
             )
         )
-    print(time.perf_counter() - t)
     return geojson.FeatureCollection(features)
 
 
@@ -77,21 +74,15 @@ def center_from_geojson(file_path):
 def bbox_from_geojson(file_path):
     with open(file_path, encoding="utf-8") as f:
         data = json.load(f)
-    print(data["bbox"])
     return data["bbox"]
 
 
 def out_geodata(file_path, geo_data):
-    print("out")
-    t = time.perf_counter()
     with open(file_path, "w") as f:
         geojson.dump(geo_data, f, indent=4)
 
-    print(time.perf_counter() - t)
-
 
 class Nearest_Feature:
-
     def __init__(self, default_data_path, draw_data_path) -> None:
         self.default_data_path = default_data_path
         self.draw_data_path = draw_data_path
@@ -100,14 +91,12 @@ class Nearest_Feature:
 
     def build(self, out_file) -> None:
         self.geojson_to_nx(self.default_data_path)
-        features, center = self.nx_to_nearest_edge_feature(self.draw_data_path)
+        features, _ = self.nx_to_nearest_edge_feature(self.draw_data_path)
         feature_collection = geojson.FeatureCollection(features["LineString"])
         feature_collection["bbox"] = bbox_from_geojson(self.default_data_path)
         out_geodata(out_file, feature_collection)
 
     def geojson_to_nx(self, file_path) -> None:
-        print("geojson to nx")
-        t = time.perf_counter()
         nodes_idx = {}
         edges = []
         node_id = 0
@@ -173,15 +162,10 @@ class Nearest_Feature:
         )
         direct_G.graph["crs"] = "EPSG:6680"
 
-        print(time.perf_counter() - t)
-
         self.G = direct_G.to_undirected()
 
     def nx_to_nearest_edge_feature(self, file_path) -> tuple[dict, tuple[int, int]]:
         is_dbg = (False, False, True)
-
-        print("nx to nearest feature")
-        t = time.perf_counter()
 
         with open(file=file_path, mode="r", encoding="utf_8_sig") as f:
             data = json.load(f)
@@ -332,5 +316,4 @@ class Nearest_Feature:
                                 features["Point_err"].append(feature)
 
         center = center_from_geojson(self.default_data_path)
-        print(time.perf_counter() - t)
         return features, center

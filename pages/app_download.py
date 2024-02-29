@@ -194,7 +194,6 @@ def download_geo(_, center, radius):
 )
 def change_radius(radius, radius_slider):
     ctx_id = dash.ctx.triggered_id
-    print(radius, radius_slider, ctx_id)
     if ctx_id is None:
         return [radius] * 3
 
@@ -246,7 +245,6 @@ def change_center(_, center: Union[list, dict], lat, lng):
 )
 def change_zoom(input_btn, slider_btn, zoom, zoom_slider):
     ctx_id = dash.ctx.triggered_id
-    print(zoom, zoom_slider, ctx_id)
     if ctx_id is None:
         return 25, 25, 18 - 25 / 12.5
 
@@ -269,7 +267,7 @@ def change_zoom(zoom_value):
     ctx_id = dash.ctx.triggered_id
     if ctx_id is None:
         return f"Zoom {25}"
-    print(zoom_value)
+
     # v = 18 - z / 12.5
     # z = (18 - v) * 12.5
     zoom = (18 - zoom_value) * 12.5
@@ -295,5 +293,4 @@ def draw_app(*_):
     prevent_initial_call=True,
 )
 def view_redirect(_):
-    # print(flask.url_for("/view"))
     return dash.dcc.Location(pathname="/view", id="redirect")

@@ -8,7 +8,6 @@ dash.register_page(__name__, title="Dot-GPSArtRoute Viewer", path="/view")
 
 
 def get_map_children():
-    print("reload")
     default_children = [
         dl.TileLayer(),
         dl.MeasureControl(
@@ -46,7 +45,6 @@ def get_map_children():
 
 
 def get_layout():
-    print("load view")
     children, center, is_success = get_map_children()
 
     map_data = (
@@ -150,14 +148,11 @@ layout = get_layout()
 )
 def change_zoom(input_btn, slider_btn, zoom, zoom_slider):
     ctx_id = dash.ctx.triggered_id
-    print(zoom, zoom_slider, ctx_id)
     if ctx_id is None:
         return 25, 25, 18 - 25 / 12.5
 
     match ctx_id:
         case "view_Zoom-input-btn":
-            ...
-            print(18 - zoom / 12.5)
             return zoom, zoom, 18 - zoom / 12.5
         case "view_Zoom-slider-btn":
             return (
@@ -175,7 +170,6 @@ def change_zoom(zoom_value):
     ctx_id = dash.ctx.triggered_id
     if ctx_id is None:
         return f"Zoom {25}"
-    print(zoom_value)
     # v = 18 - z / 12.5
     # z = (18 - v) * 12.5
     zoom = (18 - zoom_value) * 12.5

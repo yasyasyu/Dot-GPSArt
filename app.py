@@ -12,7 +12,6 @@ if __name__ == "__main__":
     host = ""
     port = 8080
     server = simple_server.make_server(host, port, app.server)
-    print()
     print(f"server start")
     print(f"click to access!!")
     print(f"here !  ->  {ESCAPE_LINK} http://localhost:{port} {ESCAPE_RESET}")
