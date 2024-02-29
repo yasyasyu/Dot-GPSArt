@@ -20,4 +20,10 @@ pip install -r requirement.txt
 * dash-extensions
 * dash-leaflet
 
-* installer
+
+## Usage
+Run next command in the your environment 
+``` bash
+python app.py
+```
+also, unzip the ```app.zip``` and run ```app.exe``` in the zip file.
