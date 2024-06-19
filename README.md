@@ -26,4 +26,4 @@ Run next command in the your environment
 ``` bash
 python app.py
 ```
-also, unzip the ```[app.zip](https://github.com/yasyasyu/Dot-GPSArt/blob/main/app.zip)``` and run ```app.exe``` in the zip file.
+also, unzip the [app.zip](https://github.com/yasyasyu/Dot-GPSArt/blob/main/app.zip) and run ```app.exe``` in the zip file.
